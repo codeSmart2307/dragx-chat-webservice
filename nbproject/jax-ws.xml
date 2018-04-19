@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jax-ws xmlns="http://www.netbeans.org/ns/jax-ws/1">
+  <services>
+    <service name="UserService">
+      <implementation-class>lk.raneesh.csacwk.webservice.userservice.UserService</implementation-class>
+    </service>
+    <service name="ChatService">
+      <implementation-class>lk.raneesh.csacwk.webservice.chatservice.ChatService</implementation-class>
+    </service>
+  </services>
+  <clients/>
+</jax-ws>

@@ -1,8 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Author: Raneesh Gomez
+ * IIT Student ID: 2016087
+ * UoW ID: 16266986
+ * Client Server Architecture
+ * Coursework: SOAP Web Services based Java Chat Application
+ * File Name: ChatService.java
  */
+
 package lk.raneesh.csacwk.webservice.chatservice;
 
 import java.sql.Connection;
@@ -24,31 +28,30 @@ import lk.raneesh.csacwk.webservice.models.ChatMessage;
 import lk.raneesh.csacwk.webservice.models.ChatThread;
 import lk.raneesh.csacwk.webservice.userservice.UserService;
 
-/**
- *
- * @author Raneesh Gomez
- */
 @Addressing(enabled = true, required = false)
 @WebService(serviceName = "ChatService")
 public class ChatService {
 
+    // Provides access to the MySQL database
     private static Connection dbConn = DatabaseConnection.dbConnection();
 
     /**
-     * Web service operation
+     * Web service operation to add a new thread to database and retrieve the same for the client
      */
     @WebMethod(operationName = "addThread")
     public ChatThread addThread(@WebParam(name = "threadTitle") String threadTitle, @WebParam(name = "threadCreator") String threadCreator) {
         int queryExecute = 0;
         ChatThread newThread = null;
+        // Get the current date and time to be saved
         LocalDateTime newThreadDate = LocalDateTime.now();
         DateTimeFormatter testFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy HH:mm");
         String formattedString = newThreadDate.format(testFormatter);
 
         try {
+            // Declare a MySQL query statement
             Statement insertStatement = (Statement) dbConn.createStatement();
             String insert_sql = "INSERT INTO threads(threadTitle, threadCreator, threadDate) VALUES('" + threadTitle + "', '" + threadCreator + "', '" + formattedString + "')";
-            queryExecute = insertStatement.executeUpdate(insert_sql);
+            queryExecute = insertStatement.executeUpdate(insert_sql); // Execute query
             System.out.println("New Thread Stored Successfully!");
         } catch (SQLException ex) {
             Logger.getLogger(UserService.class.getName()).log(Level.SEVERE, null, ex);
@@ -59,7 +62,7 @@ public class ChatService {
             try {
                 Statement selectStatement = (Statement) dbConn.createStatement();
                 String select_sql = "SELECT threadId, threadTitle, threadCreator, threadDate FROM threads ORDER BY threadId DESC LIMIT 1";
-                ResultSet rs = selectStatement.executeQuery(select_sql);
+                ResultSet rs = selectStatement.executeQuery(select_sql); // Contains the result of the retrieved data from the select query
 
                 int threadId = 0;
                 String threadName = "";
@@ -67,12 +70,14 @@ public class ChatService {
                 String threadDate = "";
 
                 while (rs.next()) {
+                    // Assign retrieved field values to variables
                     threadId = rs.getInt("threadId");
                     threadName = rs.getString("threadTitle");
                     threadAuthor = rs.getString("threadCreator");
                     threadDate = rs.getString("threadDate");
                 }
 
+                // Declare a new object to send the thread back to the client
                 newThread = new ChatThread(threadId, threadName, threadAuthor, threadDate);
 
             } catch (SQLException ex) {
@@ -87,7 +92,7 @@ public class ChatService {
     }
 
     /**
-     * Web service operation
+     * Web service operation to retrieve all the chat threads in the application
      */
     @WebMethod(operationName = "retrieveAllThreads")
     public List<ChatThread> retrieveAllThreads() {
@@ -97,29 +102,36 @@ public class ChatService {
         try {
             Statement selectStatement = (Statement) dbConn.createStatement();
             String select_sql = "SELECT threadId, threadTitle, threadCreator, threadDate FROM threads ORDER BY threadId DESC";            
-            ResultSet rs = selectStatement.executeQuery(select_sql);
+            ResultSet rs = selectStatement.executeQuery(select_sql); // Executes and stores the data retrieved from the select query
 
             while (rs.next()) {
+                // Assign retrieved field values to variables
                 int threadId = rs.getInt("threadId");
                 String threadTitle = rs.getString("threadTitle");
                 String threadCreator = rs.getString("threadCreator");
                 String threadDate = rs.getString("threadDate");
                 
+                // Each threads data is initialized into a new thread object and returned to the client
                 ChatThread currThread = new ChatThread(threadId, threadTitle, threadCreator, threadDate);
                 
+                // Declare a MySQL query statement
                 Statement selectDateStatement = (Statement) dbConn.createStatement();
+                // Querying for the last edited user and date for each thread
                 String select_sql_last_edited_date = "SELECT messageAuthor, messageDate FROM messages WHERE threadId = " + threadId + " ORDER BY messageId DESC LIMIT 1";
-                ResultSet rsDate = selectDateStatement.executeQuery(select_sql_last_edited_date);
+                ResultSet rsDate = selectDateStatement.executeQuery(select_sql_last_edited_date); // Executes and stores the data retrieved from the select query
                 String threadLastEditedDate = null;
                 String threadLastEditedAuthor = null;
                 while (rsDate.next()) {
+                    // Assign retrieved field values to variables
                     threadLastEditedAuthor = rsDate.getString("messageAuthor");
                     threadLastEditedDate = rsDate.getString("messageDate");
                 }                
                 
+                // Creating a thread object with last edited user and date if thread contains messages
                 if (threadLastEditedDate != null && threadLastEditedAuthor != null) {
                     currThread = new ChatThread(threadId, threadTitle, threadLastEditedAuthor, threadLastEditedDate);
-                }     
+                }    
+                // Creating a thread object with threadCreator and thread creation date if the thread contains no messages
                 else {
                     currThread = new ChatThread(threadId, threadTitle, threadCreator, threadDate);
                 }
@@ -135,18 +147,20 @@ public class ChatService {
     }
 
     /**
-     * Web service operation
+     * Web service operation to retrieve all the messages of a particular thread
      */
     @WebMethod(operationName = "retrieveAllMessages")
     public List<ChatMessage> retrieveAllMessages(@WebParam(name = "threadId") int threadId) {
         List<ChatMessage> currentMessagesList = new ArrayList<>();
 
         try {
+            // Declare a MySQL query statement
             Statement selectStatement = (Statement) dbConn.createStatement();
             String select_sql_messages = "SELECT * FROM messages WHERE threadId = " + threadId;
-            ResultSet rs = selectStatement.executeQuery(select_sql_messages);
+            ResultSet rs = selectStatement.executeQuery(select_sql_messages); // Executes and stores the data retrieved from the select query
 
             while (rs.next()) {
+                // Assign retrieved field values to variables
                 int messageThreadId = rs.getInt("threadId");
                 int messageId = rs.getInt("messageId");
                 String messageBody = rs.getString("messageBody");
@@ -164,7 +178,7 @@ public class ChatService {
     }
 
     /**
-     * Web service operation
+     * Web service operation to add a new message to a thread
      */
     @WebMethod(operationName = "addMessage")
     public ChatMessage addMessage(@WebParam(name = "threadId") int threadId, @WebParam(name = "messageBody") String messageBody, @WebParam(name = "messageAuthor") String messageAuthor) {
@@ -175,9 +189,10 @@ public class ChatService {
         String formattedString = newMessageDate.format(testFormatter);
 
         try {
+            // Declare a MySQL query statement
             Statement insertStatement = (Statement) dbConn.createStatement();
             String insert_sql = "INSERT INTO messages(threadId, messageBody, messageAuthor, messageDate) VALUES('" + threadId + "', '" + messageBody + "', '" + messageAuthor + "', '" + formattedString + "')";
-            queryExecute = insertStatement.executeUpdate(insert_sql);
+            queryExecute = insertStatement.executeUpdate(insert_sql); // Execute query
             System.out.println("New Message Stored Successfully!");
         } catch (SQLException ex) {
             Logger.getLogger(UserService.class.getName()).log(Level.SEVERE, null, ex);
@@ -187,9 +202,10 @@ public class ChatService {
         //If executeUpdate() successfully added the record to the database the queryExecute variable would be 1
         if (queryExecute > 0) {
             try {
+                // Declare a MySQL query statement
                 Statement selectStatement = (Statement) dbConn.createStatement();
                 String select_sql = "SELECT * FROM messages ORDER BY messageId DESC LIMIT 1";
-                ResultSet rs = selectStatement.executeQuery(select_sql);
+                ResultSet rs = selectStatement.executeQuery(select_sql); // Executes and stores the data retrieved from the select query
 
                 int messageThreadId = 0;
                 int messageId = 0;
@@ -198,6 +214,7 @@ public class ChatService {
                 String messageDateTime = "";
 
                 while (rs.next()) {
+                    // Assign retrieved field values to variables
                     messageThreadId = rs.getInt("threadId");
                     messageId = rs.getInt("messageId");
                     messageContent = rs.getString("messageBody");
@@ -205,6 +222,7 @@ public class ChatService {
                     messageDateTime = rs.getString("messageDate");
                 }
 
+                // Declare a new message object and initialize with the retrieved data from the select query
                 newMessage = new ChatMessage(messageThreadId, messageId, messageContent, messageOwner, messageDateTime);
 
             } catch (SQLException ex) {
@@ -220,17 +238,19 @@ public class ChatService {
     }
 
     /**
-     * Web service operation
+     * Web service operation to retrieve the thread title for the message lists of a certain thread in the client
      */
     @WebMethod(operationName = "retrieveThreadTitle")
     public String retrieveThreadTitle(@WebParam(name = "threadId") int threadId) {
         String threadTitle = null;
         try {
+            // Declare a MySQL query statement
             Statement selectStatement = (Statement) dbConn.createStatement();
             String select_sql = "SELECT threadTitle FROM threads WHERE threadId = " + threadId;
-            ResultSet rs = selectStatement.executeQuery(select_sql);
+            ResultSet rs = selectStatement.executeQuery(select_sql); // Executes and stores the data retrieved from the select query
 
-            while (rs.next()) {                
+            while (rs.next()) {    
+                // Assign retrieved field values to variables
                 threadTitle = rs.getString("threadTitle");                
             }
 
@@ -240,5 +260,4 @@ public class ChatService {
         
         return threadTitle;
     }
-
 }

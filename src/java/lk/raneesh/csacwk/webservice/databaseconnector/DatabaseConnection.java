@@ -1,31 +1,26 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * File Name: DatabaseConnection.java
  */
+
 package lk.raneesh.csacwk.webservice.databaseconnector;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- *
- * @author Raneesh Gomez
- */
 public class DatabaseConnection {
-    
-    private static final String USERNAME = "root";
-    private static final String PASSWORD = "";
-    private static final String HOST = "localhost";
-    private static final String URI = "jdbc:mysql://localhost:3306/dragx_chat";
+        
+    private static final String USERNAME = "root"; // Database username    
+    private static final String PASSWORD = ""; // Database password    
+    private static final String HOST = "localhost"; // Database hostname
+    private static final String URI = "jdbc:mysql://localhost:3306/dragx_chat"; // Database Connection URI
     
     public static Connection dbConnection() {
         Connection connection = null;
         
         try {
-            Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection(URI, USERNAME, PASSWORD);
+            Class.forName("com.mysql.jdbc.Driver"); // Uses JDBC Driver to connect to MySQL Database through java
+            connection = DriverManager.getConnection(URI, USERNAME, PASSWORD); // Create connection
             System.out.println("Database Connection Successful!");
         }
         catch (SQLException e) {
@@ -35,7 +30,5 @@ public class DatabaseConnection {
             System.out.println("Class Not Found Exception" + e);
         }
         return connection;
-    }
-    
-    
+    }    
 }

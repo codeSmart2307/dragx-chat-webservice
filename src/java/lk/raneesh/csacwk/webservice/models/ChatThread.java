@@ -1,19 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * File Name: ChatThread.java
  */
+
 package lk.raneesh.csacwk.webservice.models;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-
-/**
- *
- * @author Raneesh Gomez
- */
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name="ChatThread")
@@ -36,9 +30,7 @@ public class ChatThread {
         this.threadTitle = threadTitle;
         this.threadCreator = threadCreator;
         this.threadDateTime = threadDateTime;
-    }   
-    
-    
+    }  
 
     /**
      * @return the threadTitle
@@ -94,8 +86,5 @@ public class ChatThread {
      */
     public void setThreadId(int threadId) {
         this.threadId = threadId;
-    }
-    
-    
-    
+    }   
 }

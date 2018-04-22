@@ -1,8 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * Author: Raneesh Gomez
+ * IIT Student ID: 2016087
+ * UoW ID: 16266986
+ * Client Server Architecture
+ * Coursework: SOAP Web Services based Java Chat Application
+ * File Name: UserService.java
  */
+
 package lk.raneesh.csacwk.webservice.userservice;
 
 import java.sql.Connection;
@@ -29,7 +33,7 @@ public class UserService {
     private static Connection dbConn = DatabaseConnection.dbConnection();
 
     /**
-     * Web service operation
+     * Web service operation to log a user into the application
      */
     @WebMethod(operationName = "login")
     public String login(@WebParam(name = "username") String username, @WebParam(name = "password") String password) {
@@ -40,11 +44,13 @@ public class UserService {
         String dbNickname = "null";
 
         try {
+            // Declare a MySQL query statement
             Statement selectStatement = (Statement) dbConn.createStatement();
             String select_sql = "SELECT username, password, nickname FROM users WHERE username = '" + username + "'";
-            ResultSet rs = selectStatement.executeQuery(select_sql);
+            ResultSet rs = selectStatement.executeQuery(select_sql); // Contains the result of the retrieved data from the select query
 
             while (rs.next()) {
+                // Assign retrieved field values to variables
                 dbLoginId = rs.getString("username");
                 dbLoginPassword = rs.getString("password");
                 dbNickname = rs.getString("nickname");
@@ -55,6 +61,7 @@ public class UserService {
             Logger.getLogger(UserService.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        // Validation for user name and password
         if (dbLoginId.equals(username)) {
             if (dbLoginPassword.equals(password)) {
                 loginStatus = "success&" + dbNickname;
@@ -70,7 +77,7 @@ public class UserService {
     }
 
     /**
-     * Web service operation
+     * Web service operation to register a new user to the application
      */
     @WebMethod(operationName = "register")
     public String register(@WebParam(name = "nickname") String nickname, @WebParam(name = "username") String username, @WebParam(name = "password") String password, @WebParam(name = "confirmPassword") String confirmPassword) {
@@ -83,10 +90,12 @@ public class UserService {
         String dbLoginId = "undefined";
 
         try {
+            // Declare a MySQL query statement
             Statement selectStatement = (Statement) dbConn.createStatement();
             String select_sql = "SELECT username FROM users WHERE username = '" + username + "'";
-            ResultSet rs = selectStatement.executeQuery(select_sql);
+            ResultSet rs = selectStatement.executeQuery(select_sql); // Contains the result of the retrieved data from the select query
             while (rs.next()) {
+                // Assign retrieved field values to variables
                 dbLoginId = rs.getString("username");
                 System.out.println(dbLoginId);
             }
@@ -95,6 +104,7 @@ public class UserService {
             Logger.getLogger(UserService.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        // Validation for registration credentials
         if (dbLoginId.equals("undefined")) {
             if (username.length() < 30) {
                 isLoginIdValid = true;
@@ -107,6 +117,7 @@ public class UserService {
 
         if (isLoginIdValid && isPasswordValid && isNicknameValid) {            
             try {
+                // If credentials are valid inputs the credentials are stored in the MySQL Database
                 Statement insertStatement = (Statement) dbConn.createStatement();
                 String insert_sql = "INSERT INTO users(nickname, username, password) VALUES('" + nickname + "', '" + username + "', '" + password + "')";
                 insertStatement.executeUpdate(insert_sql);
